@@ -5,10 +5,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.File;
-import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 public class App {
 
@@ -35,11 +33,6 @@ public class App {
             System.out.println("Chrome найден по пути: " + chromePath);
         } else {
             System.err.println("Chrome не найден по пути: " + chromePath);
-            String[] standardPaths = {
-                    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-                    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-                    System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"
-            };
         }
 
         String driverPath = "chromedriver-win64/chromedriver.exe";
@@ -59,17 +52,18 @@ public class App {
             webDriver = new ChromeDriver(options);
             System.out.println("Браузер успешно запущен!");
 
+            webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
             webDriver.get("https://www.calculator.net/password-generator.html");
-            System.out.println("Страница загружена: https://www.calculator.net/password-generator.html");
+            System.out.println("Страница загружена");
 
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(45));
-            By passwordLocator = By.cssSelector("#resultid div.verybigtext b");
-            wait.until(ExpectedConditions.presenceOfElementLocated(passwordLocator));
-            WebElement passwordEl = webDriver.findElement(passwordLocator);
+            Thread.sleep(3000);
+
+            WebElement passwordEl = webDriver.findElement(By.cssSelector("#resultid div.verybigtext b"));
             System.out.println("Сгенерированный пароль: " + passwordEl.getText());
 
         } catch (Exception e) {
             System.out.println("Ошибка: " + e);
+            e.printStackTrace();
         } finally {
             if (webDriver != null) {
                 webDriver.quit();

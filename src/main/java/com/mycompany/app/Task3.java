@@ -19,9 +19,7 @@ public class Task3 {
 
         try {
             ChromeOptions options = configureChromeOptions();
-
             setupChromeDriver();
-
             webDriver = new ChromeDriver(options);
 
             String url = "https://api.open-meteo.com/v1/forecast?latitude=56&longitude=44&hourly=temperature_2m,rain&current=cloud_cover&timezone=Europe%2FMoscow&forecast_days=1&wind_speed_unit=ms";
@@ -40,9 +38,10 @@ public class Task3 {
             JSONArray temperatures = (JSONArray) hourly.get("temperature_2m");
             JSONArray rains = (JSONArray) hourly.get("rain");
 
-            System.out.println("\n" + "=".repeat(80));
+            String line = createLine(80);
+            System.out.println("\n" + line);
             System.out.printf("%-5s %-25s %-15s %-15s\n", "№", "Дата/время", "Температура (°C)", "Осадки (мм)");
-            System.out.println("-".repeat(80));
+            System.out.println(createDashLine(80));
 
             for (int i = 0; i < times.size(); i++) {
                 String time = (String) times.get(i);
@@ -52,12 +51,13 @@ public class Task3 {
                 System.out.printf("%-5d %-25s %-15.1f %-15.2f\n",
                         (i + 1), time, temp.doubleValue(), rain.doubleValue());
             }
-            System.out.println("=".repeat(80) + "\n");
+            System.out.println(line + "\n");
 
             saveForecastToFile(times, temperatures, rains);
 
         } catch (Exception e) {
             System.out.println("Ошибка в Task3: " + e);
+            e.printStackTrace();
         } finally {
             if (webDriver != null) {
                 webDriver.quit();
@@ -73,6 +73,7 @@ public class Task3 {
 
         if (chromeFile.exists()) {
             options.setBinary(chromePath);
+            System.out.println("Chrome найден по пути: " + chromePath);
         } else {
             String[] standardPaths = {
                     "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -84,10 +85,16 @@ public class Task3 {
                 File standardChrome = new File(path);
                 if (standardChrome.exists()) {
                     options.setBinary(path);
+                    System.out.println("Chrome найден по стандартному пути: " + path);
                     break;
                 }
             }
         }
+
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--remote-allow-origins=*");
 
         return options;
     }
@@ -98,6 +105,9 @@ public class Task3 {
 
         if (driverFile.exists()) {
             System.setProperty("webdriver.chrome.driver", driverPath);
+            System.out.println("Chromedriver найден по пути: " + driverPath);
+        } else {
+            System.err.println("Chromedriver не найден по пути: " + driverPath);
         }
     }
 
@@ -110,9 +120,10 @@ public class Task3 {
 
             PrintWriter writer = new PrintWriter(new FileWriter("result/forecast.txt"));
 
-            writer.println("=".repeat(80));
+            String line = createLine(80);
+            writer.println(line);
             writer.printf("%-5s %-25s %-15s %-15s\n", "№", "Дата/время", "Температура (°C)", "Осадки (мм)");
-            writer.println("-".repeat(80));
+            writer.println(createDashLine(80));
 
             for (int i = 0; i < times.size(); i++) {
                 String time = (String) times.get(i);
@@ -122,7 +133,7 @@ public class Task3 {
                 writer.printf("%-5d %-25s %-15.1f %-15.2f\n",
                         (i + 1), time, temp.doubleValue(), rain.doubleValue());
             }
-            writer.println("=".repeat(80));
+            writer.println(line);
 
             writer.close();
             System.out.println("Прогноз погоды сохранен в файл: result/forecast.txt");
@@ -130,5 +141,21 @@ public class Task3 {
         } catch (Exception e) {
             System.out.println("Ошибка при сохранении файла: " + e);
         }
+    }
+
+    private static String createLine(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append("=");
+        }
+        return sb.toString();
+    }
+
+    private static String createDashLine(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append("-");
+        }
+        return sb.toString();
     }
 }
